@@ -1,0 +1,56 @@
+name: CNAVF Ubuntu Online Prevention
+
+on: [push]
+
+jobs:
+  cnvaf-prevention:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    # STEP 1: Verify Ubuntu Environment
+    - name: Verify Ubuntu Environment
+      run: |
+        lsb_release -a
+        uname -a
+
+    # STEP 2: Secure API Key Injection (Simulated)
+    - name: Secure API Key Injection
+      run: |
+        export API_KEY="sk_test_FAKE_IEEE_2025"
+        echo "::add-mask::$API_KEY"
+        echo "API key injected securely"
+
+    # STEP 3: Accidental Leakage Simulation
+    - name: Simulate Leakage (For Experiment)
+      run: |
+        echo "Leaked key attempt" > leak.log
+        echo "sk_test_FAKE_IEEE_2025" >> leak.log
+
+    # STEP 4: Static Secret Inspection (Prevention Trigger)
+    - name: Static Secret Inspection
+      run: |
+        if grep -E "sk_test_[A-Za-z0-9]+" leak.log; then
+          echo "⚠️ Static Scan: Secret Detected"
+          echo "PREVENTION ACTION: Removing leaked file"
+          rm -f leak.log
+        else
+          echo "Static Scan: Clean"
+        fi
+
+    # STEP 5: Runtime Leakage Prevention
+    - name: Runtime Leakage Prevention
+      run: |
+        if [ -f leak.log ]; then
+          echo "❌ Runtime Exposure Still Exists"
+          exit 1
+        else
+          echo "✅ Leakage Prevented Successfully"
+        fi
+
+    # STEP 6: Secure Continuation
+    - name: Secure Pipeline Continuation
+      run: |
+        echo "Pipeline continued with no exposed secrets"
