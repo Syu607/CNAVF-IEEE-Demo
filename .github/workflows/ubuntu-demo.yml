@@ -1,0 +1,38 @@
+name: CNAVF Ubuntu Online Demonstration
+
+on: [push]
+
+jobs:
+  cnvaf-demo:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Verify Ubuntu Environment
+      run: |
+        lsb_release -a
+        uname -a
+
+    - name: Adversarial API Key Injection
+      run: |
+        export API_KEY="sk_test_FAKE_IEEE_2025"
+        echo $API_KEY > leak.log
+
+    - name: Static Secret Inspection
+      run: |
+        if grep -E "sk_test_[A-Za-z0-9]+" leak.log; then
+          echo "Static Scan: Secret Detected"
+        else
+          echo "Static Scan: Clean"
+        fi
+
+    - name: Runtime Leakage Detection
+      run: |
+        if grep -q "FAKE" leak.log; then
+          echo "RUNTIME API KEY LEAKAGE DETECTED"
+          exit 1
+        else
+          echo "No Runtime Leakage"
+        fi
